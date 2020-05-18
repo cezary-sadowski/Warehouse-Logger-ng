@@ -8,26 +8,36 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class LoggerComponent {
+  sourcedata: string[] = [];
   data: string[] = [];
+  prepareButtonClicked: Boolean = false;
 
   materials = [];
   warehouses = [];
   groupedWarehouses = [];
   warehouseWithTotal = [];
+  preparedWarehouseData = [];
 
   constructor(private http: HttpClient) {
 
     this.http.get('assets/SourceData.txt', { responseType: 'text' })
       .subscribe(data => {
         for (let line of data.split(/[\r\n]+/)) {
-          this.data.push(line);
+          this.sourcedata.push(line);
         }
-        this.deleteIgnoredLines(this.data);
-        this.getMaterials(this.data);
-        this.getWarehouses(this.materials);
-        this.groupWarehouses(this.warehouses);
-        this.getRelevantSortedData(this.groupWarehouses);
       });
+  }
+
+  onPrepareClick() {
+    if (this.prepareButtonClicked === false) {
+      this.deleteIgnoredLines(this.sourcedata);
+      this.getMaterials(this.data);
+      this.getWarehouses(this.materials);
+      this.groupWarehouses(this.warehouses);
+      this.getRelevantSortedData(this.groupWarehouses);
+      this.prepareButtonClicked = true;
+    }
+
   }
 
   deleteIgnoredLines(data) {
@@ -90,6 +100,7 @@ export class LoggerComponent {
         warehouse: Object,
         totalAmount: 0
       }
+
       let totalAmount: number = 0;
       let currentWarehouse = warehouses[current];
 
@@ -105,15 +116,13 @@ export class LoggerComponent {
       warehouseWithTotal.totalAmount = totalAmount;
 
       this.warehouseWithTotal.push(warehouseWithTotal);
+      this.preparedWarehouseData = this.warehouseWithTotal;
 
-      this.warehouseWithTotal
+      this.preparedWarehouseData
         .sort((a, b) =>
           (a.totalAmount < b.totalAmount) ? 1 : ((b.totalAmount < a.totalAmount) ? -1 : 0))
         .sort((a, b) =>
           (a.totalAmount === b.totalAmount) ? -1 : ((b.warehouseName > a.warehouseName) ? 1 : 0));;
-
-      this.warehouseWithTotal;
-      debugger;
     }
   }
 }

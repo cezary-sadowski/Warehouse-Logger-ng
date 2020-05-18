@@ -1,20 +1,23 @@
 <h4>Source Data from text file:</h4>
     <ul>
-      <li *ngFor="let row of data">
+      <li *ngFor="let row of sourcedata">
         {{ row }}
       </li>
     </ul>
 
-    <h4>Prepared Data:</h4>
-    <ul>
-      <li class="list-group-item list-group-item-info" *ngFor="let current of warehouseWithTotal">
-        <b>{{ current.warehouseName }} </b> (total <b>{{ current.totalAmount }}</b>)
+    <button (click)="onPrepareClick()" type="button" class="btn btn-info">Prepare data</button>
 
-        <ul>
-          <li *ngFor="let material of current.warehouse">
+    <div *ngIf="prepareButtonClicked">
+      <h4>Prepared Data:</h4>
+      <ul>
+        <li class="list-group-item list-group-item-info" *ngFor="let current of warehouseWithTotal">
+          <b>{{ current.warehouseName }} </b> (total <b>{{ current.totalAmount }}</b>)
+
+          <ul>
+            <li *ngFor="let material of current.warehouse">
             {{ material.materialId }}: <b>{{ material.materialAmount }}</b>
-          </li>
-        </ul>
-
-      </li>
-    </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
