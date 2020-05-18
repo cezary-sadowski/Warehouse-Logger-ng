@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
 export class LoggerComponent {
   data: string[] = [];
 
-  materialArray = [];
+  materials = [];
   warehouses = [];
 
   constructor(private http: HttpClient) {
@@ -28,6 +28,7 @@ export class LoggerComponent {
         }
         this.deleteIgnoredLines(this.data);
         this.getMaterials(this.data);
+        this.getWarehouses(this.materials);
       });
   }
 
@@ -45,13 +46,36 @@ export class LoggerComponent {
         warehousesWithAmount: ''
       }
 
-      let cutted = material.split(';');
-      singleMaterial.materialId = cutted[1];
-      singleMaterial.warehousesWithAmount = cutted[2];
+      let cuttedMaterial = material.split(';');
+      singleMaterial.materialId = cuttedMaterial[1];
+      singleMaterial.warehousesWithAmount = cuttedMaterial[2];
 
-      this.materialArray.push(singleMaterial);
+      this.materials.push(singleMaterial);
     })
   }
 
+  getWarehouses(data) {
+    //material "COM-123906c"; "WH-A,10|WH-B,11"
+    data.forEach(el => {
+      let cuttedWarehouseInfo = el.warehousesWithAmount.split('|');
+
+      cuttedWarehouseInfo.forEach(cutted => {
+        let warehouse = {
+          warehouseName: '',
+          materialId: '',
+          materialAmount: ''
+        }
+        let cuttedWarehouseWithAmount = cutted.split(',');
+
+        warehouse.warehouseName = cuttedWarehouseWithAmount[0];
+        warehouse.materialId = el.materialId;
+        warehouse.materialAmount = cuttedWarehouseWithAmount[1];
+
+        this.warehouses.push(warehouse);
+      })
+    });
+
+    var tmp = this.warehouses;
+  };
 }
 
