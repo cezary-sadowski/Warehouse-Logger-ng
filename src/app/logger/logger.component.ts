@@ -3,13 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-logger',
-  template: `
-    <ul>
-      <li *ngFor="let row of data">
-        {{ row }}
-      </li>
-    </ul>
-  `,
+  templateUrl: './logger.component.html',
   styleUrls: ['./logger.component.css']
 })
 
@@ -18,6 +12,8 @@ export class LoggerComponent {
 
   materials = [];
   warehouses = [];
+  groupedWarehouses = [];
+  warehouseWithTotal = [];
 
   constructor(private http: HttpClient) {
 
@@ -29,6 +25,8 @@ export class LoggerComponent {
         this.deleteIgnoredLines(this.data);
         this.getMaterials(this.data);
         this.getWarehouses(this.materials);
+        this.groupWarehouses(this.warehouses);
+        this.getRelevantSortedData(this.groupWarehouses);
       });
   }
 
@@ -42,8 +40,8 @@ export class LoggerComponent {
   getMaterials(data) {
     let material = data.map((material) => {
       let singleMaterial = {
-        materialId: '',
-        warehousesWithAmount: ''
+        materialId: String,
+        warehousesWithAmount: String
       }
 
       let cuttedMaterial = material.split(';');
@@ -55,15 +53,14 @@ export class LoggerComponent {
   }
 
   getWarehouses(data) {
-    //material "COM-123906c"; "WH-A,10|WH-B,11"
     data.forEach(el => {
       let cuttedWarehouseInfo = el.warehousesWithAmount.split('|');
 
       cuttedWarehouseInfo.forEach(cutted => {
         let warehouse = {
-          warehouseName: '',
-          materialId: '',
-          materialAmount: ''
+          warehouseName: String,
+          materialId: String,
+          materialAmount: String
         }
         let cuttedWarehouseWithAmount = cutted.split(',');
 
@@ -74,8 +71,50 @@ export class LoggerComponent {
         this.warehouses.push(warehouse);
       })
     });
-
-    var tmp = this.warehouses;
   };
+
+  groupWarehouses(warehouses) {
+    let groupedWarehouses = warehouses.reduce(function (pvalue, cvalue) {
+      pvalue[cvalue.warehouseName] = pvalue[cvalue.warehouseName] || [];
+      pvalue[cvalue.warehouseName].push(cvalue);
+      return pvalue;
+    }, Object.create(null));
+
+    this.groupWarehouses = groupedWarehouses;
+  }
+
+  getRelevantSortedData(warehouses) {
+    for (let current in warehouses) {
+      let warehouseWithTotal = {
+        warehouseName: '',
+        warehouse: Object,
+        totalAmount: 0
+      }
+      let totalAmount: number = 0;
+      let currentWarehouse = warehouses[current];
+
+      currentWarehouse.sort((a, b) =>
+        (a.materialId > b.materialId) ? 1 : ((b.materialId > a.materialId) ? -1 : 0));
+
+      currentWarehouse.forEach(el => {
+        totalAmount += parseInt(el.materialAmount);
+      })
+
+      warehouseWithTotal.warehouseName = current;
+      warehouseWithTotal.warehouse = currentWarehouse;
+      warehouseWithTotal.totalAmount = totalAmount;
+
+      this.warehouseWithTotal.push(warehouseWithTotal);
+
+      this.warehouseWithTotal
+        .sort((a, b) =>
+          (a.totalAmount < b.totalAmount) ? 1 : ((b.totalAmount < a.totalAmount) ? -1 : 0))
+        .sort((a, b) =>
+          (a.totalAmount === b.totalAmount) ? -1 : ((b.warehouseName > a.warehouseName) ? 1 : 0));;
+
+      this.warehouseWithTotal;
+      debugger;
+    }
+  }
 }
 
